@@ -1,0 +1,70 @@
+shared:
+  ingress_domain: "152tap.asc-test.net"
+
+  image_registry:
+    project_path: "zhiyongliacr.azurecr.io/tanzu152"
+    secret:
+      name: "registry-credentials"
+      namespace: "tap-install"
+
+ceip_policy_disclosed: true # Installation fails if this is not set to true. Not a string.
+
+#The above keys are minimum numbers of entries needed in tap-values.yaml to get a functioning TAP Full profile installation.
+
+#Below are the keys which may have default values set, but can be overridden.
+
+profile: full # Can take iterate, build, run, view.
+
+supply_chain: basic # Can take testing, testing_scanning.
+
+ootb_supply_chain_basic: # Based on supply_chain set above, can be changed to ootb_supply_chain_testing, ootb_supply_chain_testing_scanning.
+  registry:
+    server: "zhiyongliacr.azurecr.io" # Takes the value from the shared section by default, but can be overridden by setting a different value.
+    repository: "supplychainrep" # Takes the value from the shared section by default, but can be overridden by setting a different value.
+  gitops:
+    ssh_secret: "" # Takes "" as value by default; but can be overridden by setting a different value.
+
+contour:
+  envoy:
+    service:
+      type: LoadBalancer # This is set by default, but can be overridden by setting a different value.
+
+buildservice:
+  # Takes the value from the shared section by default, but can be overridden by setting a different value.
+  kp_default_repository: "buildservicerep"
+  kp_default_repository_secret: # Takes the value from the shared section above by default, but can be overridden by setting a different value.
+    name: "registry-credentials"
+    namespace: "tap-install"
+
+tap_gui:
+  service_type: LoadBalancer
+  metadataStoreAutoconfiguration: true # Creates a service account, the Kubernetes control plane token and the requisite app_config block to enable communications between Tanzu Application Platform GUI and SCST - Store.
+  app_config:
+    proxy:
+      /metadata-store:
+        target: https://metadata-store-app.metadata-store:8443/api/v1
+        changeOrigin: true
+        secure: false
+        headers:
+          Authorization: "Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6IkFZY3FKbEFtbmNmU3hnd1hlaW5uSVVsZGV3OU1hTTY0X0pnd09RME1NMVEifQ.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJtZXRhZGF0YS1zdG9yZSIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VjcmV0Lm5hbWUiOiJtZXRhZGF0YS1zdG9yZS1yZWFkLXdyaXRlLWNsaWVudCIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50Lm5hbWUiOiJtZXRhZGF0YS1zdG9yZS1yZWFkLXdyaXRlLWNsaWVudCIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50LnVpZCI6IjJhMGQ0OTgxLWYxYzEtNDQ0Yy1iYjYwLWEyOTJlZWI1NGY0YiIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDptZXRhZGF0YS1zdG9yZTptZXRhZGF0YS1zdG9yZS1yZWFkLXdyaXRlLWNsaWVudCJ9.DTu7Uwqr_e6WgNk0LbW1GJdPEAhUxnmLRgZlU9yyLWToLPenmWGGvKdpRngMi2Mklbgt0SCAWIGfW0g-tSavNcr2hC2Sx0tVuylAIRyDWmh6dwjV5y_JHcuu_AgnKkl19icb8Fr-I5kq2Zjc-daLjig7doFhedwqmglIK5Dq0WNEdvrtnKmkxX9pnfJmcTZvC7BlUnP0mwcziuYmyA7OP_eX8iVwRoJvdaefvc1V9FHnGQXupLKIL_TCaOry1VqAJQ6vXKruuH8OXQwvERpyZL5V733Ud212HHyStrjzbgQueWKWr3IajoHsEYWTPI0e5r_lONxn1OlBt0murcSizWkNg31hTw97A54fz_oeSd7WOY3gOspuUr8D5jgbLGoW1VNukAy3od3CbQXYm3aIJ5iKYghndd369iVo8KBlyI-Q8hiR_u1jSnngR46UnT4e7XbEGSuTBMUkricW-f4Dd2zo5CQvG8QFfTf1MFVaCD_bWvngnxCY0mZZ7AyFvKiWxIBmgrN67n9NmFK8_y_eHrLWjJMTDIZCLDyaHaFSD3bSUSk7iSoIf7fa9lVK_zJqGaAWaV6yMc2qwRFYKZsSn7JYQyBNbB_UUTO-CrdZzAno-mqrTavtDFkH99PSo1CkowooRZR-dcrlrf52T7FR_EpxCSKZvzmvgbZCzNwYz5M"
+          X-Custom-Source: project-star
+    catalog:
+      locations:
+        - type: url
+          target: https://GIT-CATALOG-URL/catalog-info.yaml
+
+metadata_store:
+  ns_for_export_app_cert: "*" # Verify this namespace is available within your cluster before initiating the Tanzu Application Platform installation.
+  app_service_type: ClusterIP # Defaults to LoadBalancer. If shared.ingress_domain is set earlier, this must be set to ClusterIP.
+
+scanning:
+  metadataStore:
+    url: "" # Configuration is moved, so set this string to empty.
+
+grype:
+  namespace: "my-dev" # Verify this namespace is available within your cluster before initiating the Tanzu Application Platform installation.
+  targetImagePullSecret: "registry-credentials"
+  # In a single cluster, the connection between the scanning pod and the metadata store happens inside the cluster and does not pass through ingress. This is automatically configured, you do not need to provide an ingress connection to the store.
+
+policy:
+  tuf_enabled: false # By default, TUF initialization and keyless verification are deactivated.
