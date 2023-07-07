@@ -15,4 +15,4 @@ spec:
   type: service
   lifecycle: experimental
   owner: team-a
-  system: tanzu-web
+  system: my-dev
